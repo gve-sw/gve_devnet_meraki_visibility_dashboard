@@ -1,0 +1,65 @@
+<!--Charts: Overview of line chart UI components-->
+
+{% extends "masterPage.html" %}
+
+{% block content %}
+
+
+<div class="row">
+        <!-- Sidebar -->
+         <!-- Left Rail -->
+         {% include "menu.html" %}
+
+        <div class="col-12 col-lg-9 col-xl-10">
+            <div class="section">
+                <div class="row justify-content-center">
+    <!--                BEGIN SEARCH BAR-->
+                    <div class="col-md-3 text-center half-padding-bottom  half-padding-top">
+                        <div class="form-group input--icon">
+                            <div class="form-group__text">
+                                <input id="searchInput" type="search" required>
+                                <label>Search Inventory</label>
+                                <button type="button" class="link" tabindex="-1">
+                                    <span class="icon-search"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+    <!--                END SEARCH BAR-->
+                    <div class="col-xl-12">
+                        <div class="responsive-table scrollable_table" >
+                            <table class="table table--lined table--selectable table" id="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">Device Type</th>
+                                        <th class="text-center">Device Name</th>
+                                        <th class="text-center">MAC Address</th>
+                                        <th class="text-center">Network</th>
+                                        <th class="text-center">Device Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for device in devices %}
+                                        <tr>
+                                            <td class="text-center">{{device.type}}</td>
+                                            <td class="text-center">{{device.name}}</td>
+                                            <td class="text-center">{{device.mac}}</td>
+                                            <td class="text-center">{{device.network}}</td>
+                                            <td class="text-center">
+                                                {% if device.status == "offline" %}
+                                                    <span class="badge badge--danger">{{device.status}}</span>
+                                                {% else %}
+                                                    <span class="badge badge--success">{{device.status}}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+{% endblock %}

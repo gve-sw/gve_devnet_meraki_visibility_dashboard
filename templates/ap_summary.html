@@ -1,0 +1,194 @@
+<!--Charts: Overview of line chart UI components-->
+
+{% extends "masterPage.html" %}
+
+{% block content %}
+
+
+<div class="row">
+
+    <!-- Sidebar -->
+     <!-- Left Rail -->
+     {% include "menu.html" %}
+
+    <div class="col-12 col-lg-9 col-xl-10">
+        <div class="section">
+            <div class="row">
+                <!--BEGIN SEARCH BAR/TABS-->
+                <div class="flex-center-vertical dbl-margin-left">
+                    <div class="form-group input--icon base-margin-right">
+                        <div class="form-group__text">
+                            <input id="input-type-search" type="search" placeholder="Search">
+                            <button type="button" class="link">
+                                <span class="icon-search"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <ul id="inline" class="tabs tabs--inline">
+                        <li id="inline-1" class="tab active">
+                            <a tabindex="0">AP Network Summary</a>
+                        </li>
+                        <li id="inline-2" class="tab">
+                            <a tabindex="1">All AP Clients</a>
+                        </li>
+                        <li id="inline-3" class="tab">
+                            <a tabindex="2">All AP Bandwidths</a>
+                        </li>
+                    </ul>
+                </div>
+                <div id="inline-content" class="tab-content">
+                    <div id="inline-1-content" class="tab-pane active">
+                    </div>
+                    <div id="inline-2-content" class="tab-pane">
+                    </div>
+                </div>
+<!--                END SEARCH BAR TABS-->
+                <div class="col-xl-12">
+<!--                    BEGIN CLIENTS TABLE-->
+                    <div class="responsive-table scrollable_table">
+                        <table class="table table--lined table--selectable table dataTable multi-table" id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">AP Name</th>
+                                    <th class="text-center">MAC Address</th>
+                                    <th class="text-center">Network Name</th>
+                                    <th class="text-center">Client Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ap in aps_data %}
+                                    {% for ap_clients in ap.clients %}
+                                    <tr>
+                                        <td class="text-center">{{ap_clients.name}}</td>
+                                        <td class="text-center">{{ap_clients.mac}}</td>
+                                        <td class="text-center">{{ap.network}}</td>
+                                        <td class="text-center">
+                                            {% if ap_clients.alert %}
+                                                <span class="badge badge--warning">{{ap_clients.count}}</span>
+                                            {% else %}
+                                                <span class="badge badge--success">{{ap_clients.count}}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+<!--                    END CLIENTS TABLE-->
+
+                    <!--                    BEGIN BANDWIDTH TABLE-->
+                    <div class="responsive-table scrollable_table ">
+                        <table class="table table--lined table--selectable table dataTable multi-table" id="bandwidth-table">
+                           <thead>
+                               <tr>
+                                   <th class="text-center">AP Name</th>
+                                   <th class="text-center">MAC Address</th>
+                                   <th class="text-center">Network Name</th>
+                                   <th class="text-center">Current Bandwidth Usage (Kb/s)</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                           {% for ap in aps_data %}
+                               {% for ap_bandwidth in ap.bandwidths %}
+                                   <tr>
+                                       <td class="text-center">{{ap_bandwidth.name}}</td>
+                                       <td class="text-center">{{ap_bandwidth.mac}}</td>
+                                       <td class="text-center">{{ap.network}}</td>
+                                       <td class="text-center">
+                                           {% if ap_bandwidth.alert %}
+                                               <span class="badge badge--warning">{{ap_bandwidth.bandwidth}}</span>
+                                           {% else %}
+                                               <span class="badge badge--success">{{ap_bandwidth.bandwidth}}</span>
+                                           {% endif %}
+                                       </td>
+                                   </tr>
+                               {% endfor %}
+                           {% endfor %}
+
+                           </tbody>
+                        </table>
+                    </div>
+<!--                    END BANDWIDTH TABLE-->
+<!--                    BEGIN NETWORK SUMMARY TABLE-->
+                    <div class="responsive-table scrollable_table">
+                        <table class="table table--lined table--selectable table dataTable multi-table" id="network-summary-table">
+                           <thead>
+                               <tr>
+                                   <th class="text-center">Network Name</th>
+                                   <th class="text-center">Total Client Count</th>
+                                   <th class="text-center">Current Bandwidth Usage (Kb/s)</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                           {% for network, values in network_summary.items() %}
+                                   <tr>
+                                       <td class="text-center">{{network}}</td>
+                                       <td class="text-center">{{values['client_count']}}</td>
+                                       <td class="text-center">
+                                       {% if values['total_bandwidth'] > BANDWIDTH_THRESHOLD %}
+                                               <span class="badge badge--warning">{{values['total_bandwidth']}}</span>
+                                       {% else %}
+                                               <span class="badge badge--success">{{values['total_bandwidth']}}</span>
+                                       {% endif %}
+                                       </td>
+                                   </tr>
+                           {% endfor %}
+                           </tbody>
+                        </table>
+                    </div>
+<!--                    END NETWORK SUMMARY TABLE-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // This function hides all tables
+        function hideAllTables() {
+            document.querySelectorAll('.multi-table').forEach(function(table) {
+                table.style.display = 'none'; // Hide
+            });
+            console.log("Tables hidden")
+        }
+
+        // This function shows the specified table
+        function showTable(tableId) {
+            const table = document.querySelector(tableId);
+            console.log("Showing table: " + tableId)
+            if (table) {
+                table.style.display = ''; // Show
+            }
+        }
+
+        // Initial setup: hide all tables and show the first one
+        hideAllTables();
+        showTable('#network-summary-table'); // Assuming this is the ID of the first table you want to show
+
+        // Setup click event listeners for tabs
+        document.querySelectorAll('.tabs a').forEach(function(tab) {
+            tab.addEventListener('click', function(event) {
+                const targetId = event.target.getAttribute('tabindex'); // Get the tabindex attribute to decide which table to show
+                console.log("Target ID: " + targetId)
+                // Hide all tables first
+                hideAllTables();
+
+
+                // Show the table corresponding to the clicked tab
+                if (targetId === "0") {
+                    showTable('#network-summary-table'); // Assuming you assign this ID to your Clients table
+                } else if (targetId === "1") {
+                    showTable('#clients-table'); // Assuming you assign this ID to your Bandwidth table
+                } else if (targetId === "2") {
+                    showTable('#bandwidth-table'); // Assuming you assign this ID to your Network Summary table
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
